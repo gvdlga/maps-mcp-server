@@ -69,7 +69,7 @@ export class ApiKeyManager {
 
     private static async loadAuthDataFromDashboard(geniusKey: string): Promise<AuthData | undefined> {
         let authData: AuthData | undefined = undefined;
-        const result = await fetch('https://dashboard.geniusagents.nl/api/mcp', {
+        const result = await fetch('https://dashboard.geniusagents.nl/api/mcp?mcpName=Maps', {
             method: 'GET',
             headers: {
                 'x-api-key': geniusKey
@@ -77,6 +77,7 @@ export class ApiKeyManager {
         });
         if (result.ok) {
             const data = await result.json();
+            console.log(`Received auth data from dashboard: ${JSON.stringify(data)}`);
             if (data.apiKey) {
                 authData = { 
                     apiKey: data.apiKey, 
@@ -102,22 +103,25 @@ export class ApiKeyManager {
     static async loadAuthData(req: Request): Promise<AuthData | undefined> {
         const headers = req.headers;
         const sessionId = req.query.sessionId as string;
-        let authData: AuthData | undefined = undefined;
-        if (headers) {
-            const apiKey:string | string[] | undefined = req.headers['x-api-key'];
-            if (apiKey && typeof apiKey === "string" && apiKey.startsWith("genius")) {
-                //We found a Genius API key, now read the actuel key from the genius dashboard by authenticating at the /api/mcp endpoint
-                authData = await this.loadAuthDataFromDashboard(apiKey);
-            } else if (headers.authorization && headers.authorization.startsWith("Bearer")) {
-                // We found a Bearer token, use it as API key
-                const apiKey = headers.authorization.substring(7, headers.authorization.length);
-                authData = { apiKey: apiKey };
-            } 
-      }
-      if (authData) {
-        ApiKeyManager.setAuthData(sessionId, authData);
-      }
-      return authData
+        let authData: AuthData | undefined = ApiKeyManager.getAuthData(sessionId);
+        if (!authData) {
+            console.log(`No auth data found for session ${sessionId}, attempting to load from request headers`);
+            if (headers) {
+                const apiKey:string | string[] | undefined = req.headers['x-api-key'];
+                if (apiKey && typeof apiKey === "string" && apiKey.startsWith("genius")) {
+                    //We found a Genius API key, now read the actuel key from the genius dashboard by authenticating at the /api/mcp endpoint
+                    authData = await this.loadAuthDataFromDashboard(apiKey);
+                } else if (headers.authorization && headers.authorization.startsWith("Bearer")) {
+                    // We found a Bearer token, use it as API key
+                    const apiKey = headers.authorization.substring(7, headers.authorization.length);
+                    authData = { apiKey: apiKey };
+                } 
+            }
+            if (authData) {
+                ApiKeyManager.setAuthData(sessionId, authData);
+            }
+        }
+        return authData
     }
         
 }

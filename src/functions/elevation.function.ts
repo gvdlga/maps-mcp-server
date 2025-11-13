@@ -38,7 +38,7 @@ export class ElevationFunction implements McpFunction {
             if (sessionId) {
                 apiKey = ApiKeyManager.getApiKey(sessionId);
             } else {
-                apiKey = process.env.NS_API_KEY;
+                apiKey = process.env.MAPS_API_KEY;
             }
             if (!apiKey || apiKey.trim() === "") {
                 throw new Error("No API_KEY provided. Cannot authorize Maps API.")
