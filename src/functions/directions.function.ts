@@ -60,7 +60,7 @@ export class DirectionsFunction implements McpFunction {
                 apiKey = process.env.NS_API_KEY;
             }
             if (!apiKey || apiKey.trim() === "") {
-                throw new Error("No NS_API_KEY provided. Cannot authorize NS API.")
+                throw new Error("No API_KEY provided. Cannot authorize Maps API.")
             }
             if (!args || !args.origin) {
                 throw new Error("The origin parameter should be provided to get directions.");

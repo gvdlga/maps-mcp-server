@@ -155,20 +155,14 @@ export class MapsServer {
     });
 
     this.app.post("/messages", async (req, res) => {
-      const headers = req.headers;
       const sessionId = req.query.sessionId as string;
       if (!sessionId) {
         console.error('Message received without sessionId');
         res.status(400).json({ error: 'MCP Error: sessionId is required' });
         return;
       }
+      await ApiKeyManager.loadAuthData(req);
       const transport = this.transports[sessionId];
-      if (headers) {
-        if (headers.authorization && headers.authorization.startsWith("Bearer")) {
-          const apiKey = headers.authorization.substring(7, headers.authorization.length);
-          ApiKeyManager.setApiKey(sessionId, apiKey);
-        }
-      }
       if (transport) {
         await transport.handlePostMessage(req, res);
       } else {

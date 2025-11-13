@@ -41,7 +41,7 @@ export class ElevationFunction implements McpFunction {
                 apiKey = process.env.NS_API_KEY;
             }
             if (!apiKey || apiKey.trim() === "") {
-                throw new Error("No NS_API_KEY provided. Cannot authorize NS API.")
+                throw new Error("No API_KEY provided. Cannot authorize Maps API.")
             }
             if (!args || !(args.locations && args.locations.length > 0)) {
                 throw new Error("The locations parameter should be provided with at least one lat/long to get the elevation of the locations.");

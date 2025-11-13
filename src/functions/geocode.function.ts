@@ -33,7 +33,7 @@ export class GeoCodeFunction implements McpFunction {
                 apiKey = process.env.NS_API_KEY;
             }
             if (!apiKey || apiKey.trim() === "") {
-                throw new Error("No NS_API_KEY provided. Cannot authorize NS API.")
+                throw new Error("No API_KEY provided. Cannot authorize Maps API.")
             }
             if (!args || !args.address) {
                 throw new Error("The address parameter should be provided to get the location.");

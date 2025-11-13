@@ -63,7 +63,7 @@ export class SearchPlacesFunction implements McpFunction {
                 apiKey = process.env.NS_API_KEY;
             }
             if (!apiKey || apiKey.trim() === "") {
-                throw new Error("No NS_API_KEY provided. Cannot authorize NS API.")
+                throw new Error("No API_KEY provided. Cannot authorize Maps API.")
             }
             if (!args || !args.query) {
                 throw new Error("The query parameter should be provided to get places.");
