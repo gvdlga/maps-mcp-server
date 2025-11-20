@@ -24,5 +24,5 @@ const functions: McpFunction[] = [
     new DirectionsFunction()
 ];
 
-const server = new GeniusMcpServer("Maps MCP Service", 3006, functions);
+const server = new GeniusMcpServer("Maps MCP Service", 3004, functions);
 server.run().catch(console.error);
