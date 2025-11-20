@@ -1,61 +1,59 @@
-import { ApiKeyManager } from "../utils/apikeymanager.js";
-import { McpFunction } from "./function.js";
+import { ResponseFormatter, ApiKeyManager, McpFunction } from '@geniusagents/mcp';
 import { z } from "zod";
-import { ResponseFormatter } from '../utils/ResponseFormatter.js';
-import { DirectionsResponse } from "../utils/types.js";
+import { DirectionsResponse } from "../maps/types.js";
 
 export class DirectionsFunction implements McpFunction {
 
     public name: string = "maps_directions";
 
-    public description: string = "Get directions between two points." ;
+    public description: string = "Get directions between two points.";
 
     public inputschema = {
         type: "object",
         properties: {
-          origin: {
-            type: "string",
-            description: "Origin address or coordinates"
-          },
-          destination: {
-            type: "string",
-            description: "Destination address or coordinates"
-          },
-          mode: {
-            type: "string",
-            description: "Travel mode (driving, walking, bicycling, transit)",
-            enum: ["driving", "walking", "bicycling", "transit"]
-          }
+            origin: {
+                type: "string",
+                description: "Origin address or coordinates"
+            },
+            destination: {
+                type: "string",
+                description: "Destination address or coordinates"
+            },
+            mode: {
+                type: "string",
+                description: "Travel mode (driving, walking, bicycling, transit)",
+                enum: ["driving", "walking", "bicycling", "transit"]
+            }
         },
         required: ["origin", "destination"]
-      };
+    };
 
-    public zschema = {origin: z.string(), destination: z.string(), mode: z.string().optional()};
+    public zschema = { origin: z.string(), destination: z.string(), mode: z.string().optional() };
 
     public async handleExecution(args: any, extra: any) {
-        function getDistanceFromLatLonInKm(lat1: number,lon1: number,lat2: number,lon2: number) {
+        function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
             var R = 6371; // Radius of the earth in km
-            var dLat = deg2rad(lat2-lat1);  // deg2rad below
-            var dLon = deg2rad(lon2-lon1); 
-            var a = 
-              Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2)
-              ; 
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+            var dLon = deg2rad(lon2 - lon1);
+            var a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                ;
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             var d = R * c; // Distance in km
             return d;
         }
-          
+
         function deg2rad(deg: number) {
-            return deg * (Math.PI/180)
+            return deg * (Math.PI / 180)
         }
 
         try {
             const sessionId = extra.sessionId;
             let apiKey: string | undefined;
             if (sessionId) {
-                apiKey = ApiKeyManager.getApiKey(sessionId);
+                apiKey = ApiKeyManager.getInstance().getApiKey(sessionId);
             } else {
                 apiKey = process.env.MAPS_API_KEY;
             }
@@ -101,4 +99,4 @@ export class DirectionsFunction implements McpFunction {
             return ResponseFormatter.formatError(error);
         }
     }
-  }
+}

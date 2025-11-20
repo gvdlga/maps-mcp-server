@@ -1,45 +1,43 @@
-import { ApiKeyManager } from "../utils/apikeymanager.js";
-import { McpFunction } from "./function.js";
+import { ResponseFormatter, ApiKeyManager, McpFunction } from '@geniusagents/mcp';
 import { z } from "zod";
-import { ResponseFormatter } from '../utils/ResponseFormatter.js';
-import { DistanceMatrixResponse } from "../utils/types.js";
+import { DistanceMatrixResponse } from "../maps/types.js";
 
 export class DistanceMatrixFunction implements McpFunction {
 
     public name: string = "maps_distance_matrix";
 
-    public description: string = "Calculate travel distance and time for multiple origins and destinations." ;
+    public description: string = "Calculate travel distance and time for multiple origins and destinations.";
 
     public inputschema = {
         type: "object",
         properties: {
-          origins: {
-            type: "array",
-            items: { type: "string" },
-            description: "Array of origin addresses or coordinates"
-          },
-          destinations: {
-            type: "array",
-            items: { type: "string" },
-            description: "Array of destination addresses or coordinates"
-          },
-          mode: {
-            type: "string",
-            description: "Travel mode (driving, walking, bicycling, transit)",
-            enum: ["driving", "walking", "bicycling", "transit"]
-          }
+            origins: {
+                type: "array",
+                items: { type: "string" },
+                description: "Array of origin addresses or coordinates"
+            },
+            destinations: {
+                type: "array",
+                items: { type: "string" },
+                description: "Array of destination addresses or coordinates"
+            },
+            mode: {
+                type: "string",
+                description: "Travel mode (driving, walking, bicycling, transit)",
+                enum: ["driving", "walking", "bicycling", "transit"]
+            }
         },
         required: ["origins", "destinations", "mode"]
-      };
+    };
 
-    public zschema = {origins: z.array(z.string()), destinations: z.array(z.string()), mode: z.string().optional()};
+    public zschema = { origins: z.array(z.string()), destinations: z.array(z.string()), mode: z.string().optional() };
 
     public async handleExecution(args: any, extra: any) {
         try {
             const sessionId = extra.sessionId;
             let apiKey: string | undefined;
             if (sessionId) {
-                apiKey = ApiKeyManager.getApiKey(sessionId);
+                apiKey = ApiKeyManager.getInstance().getApiKey(sessionId);
             } else {
                 apiKey = process.env.MAPS_API_KEY;
             }
@@ -83,4 +81,4 @@ export class DistanceMatrixFunction implements McpFunction {
             return ResponseFormatter.formatError(error);
         }
     }
-  }
+}

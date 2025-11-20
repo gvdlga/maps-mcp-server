@@ -1,34 +1,32 @@
-import { ApiKeyManager } from "../utils/apikeymanager.js";
-import { McpFunction } from "./function.js";
+import { ResponseFormatter, ApiKeyManager, McpFunction } from '@geniusagents/mcp';
 import { z } from "zod";
-import { ResponseFormatter } from '../utils/ResponseFormatter.js';
-import { GeocodeResponse } from "../utils/types.js";
+import { GeocodeResponse } from "../maps/types.js";
 
 export class GeoCodeFunction implements McpFunction {
 
     public name: string = "maps_geocode";
 
-    public description: string = "Convert an address into geographic coordinates." ;
+    public description: string = "Convert an address into geographic coordinates.";
 
     public inputschema = {
         type: "object",
         properties: {
-          address: {
-            type: "string",
-            description: "The address to geocode"
-          }
+            address: {
+                type: "string",
+                description: "The address to geocode"
+            }
         },
         required: ["address"]
-      };
+    };
 
-    public zschema = {address: z.string()};
+    public zschema = { address: z.string() };
 
     public async handleExecution(args: any, extra: any) {
         try {
             const sessionId = extra.sessionId;
             let apiKey: string | undefined;
             if (sessionId) {
-                apiKey = ApiKeyManager.getApiKey(sessionId);
+                apiKey = ApiKeyManager.getInstance().getApiKey(sessionId);
             } else {
                 apiKey = process.env.MAPS_API_KEY;
             }
@@ -61,4 +59,4 @@ export class GeoCodeFunction implements McpFunction {
             return ResponseFormatter.formatError(error);
         }
     }
-  }
+}

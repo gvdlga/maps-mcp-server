@@ -1,64 +1,62 @@
-import { ApiKeyManager } from "../utils/apikeymanager.js";
-import { McpFunction } from "./function.js";
+import { ResponseFormatter, ApiKeyManager, McpFunction } from '@geniusagents/mcp';
 import { z } from "zod";
-import { ResponseFormatter } from '../utils/ResponseFormatter.js';
-import { PlacesSearchResponse } from "../utils/types.js";
+import { PlacesSearchResponse } from "../maps/types.js";
 
 export class SearchPlacesFunction implements McpFunction {
 
     public name: string = "maps_search_places";
 
-    public description: string = "Search for places of a certain type, optional within a radius from a geiven location." ;
+    public description: string = "Search for places of a certain type, optional within a radius from a geiven location.";
 
     public inputschema = {
         type: "object",
         properties: {
-          query: {
-            type: "string",
-            description: "Search query"
-          },
-          location: {
-            type: "object",
-            properties: {
-              latitude: { type: "number" },
-              longitude: { type: "number" }
+            query: {
+                type: "string",
+                description: "Search query"
             },
-            description: "Optional center point for the search"
-          },
-          radius: {
-            type: "number",
-            description: "Search radius in meters (max 50000)"
-          }
+            location: {
+                type: "object",
+                properties: {
+                    latitude: { type: "number" },
+                    longitude: { type: "number" }
+                },
+                description: "Optional center point for the search"
+            },
+            radius: {
+                type: "number",
+                description: "Search radius in meters (max 50000)"
+            }
         },
         required: ["query"]
-      };
+    };
 
-    public zschema = {query: z.string(), location: z.object({latitude: z.number(), longitude: z.number()}).optional(), radius: z.number().optional()};
+    public zschema = { query: z.string(), location: z.object({ latitude: z.number(), longitude: z.number() }).optional(), radius: z.number().optional() };
 
     public async handleExecution(args: any, extra: any) {
-        function getDistanceFromLatLonInKm(lat1: number,lon1: number,lat2: number,lon2: number) {
+        function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
             var R = 6371; // Radius of the earth in km
-            var dLat = deg2rad(lat2-lat1);  // deg2rad below
-            var dLon = deg2rad(lon2-lon1); 
-            var a = 
-              Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
-              Math.sin(dLon/2) * Math.sin(dLon/2)
-              ; 
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            var dLat = deg2rad(lat2 - lat1);  // deg2rad below
+            var dLon = deg2rad(lon2 - lon1);
+            var a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                ;
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             var d = R * c; // Distance in km
             return d;
         }
-          
+
         function deg2rad(deg: number) {
-            return deg * (Math.PI/180)
+            return deg * (Math.PI / 180)
         }
 
         try {
             const sessionId = extra.sessionId;
             let apiKey: string | undefined;
             if (sessionId) {
-                apiKey = ApiKeyManager.getApiKey(sessionId);
+                apiKey = ApiKeyManager.getInstance().getApiKey(sessionId);
             } else {
                 apiKey = process.env.MAPS_API_KEY;
             }
@@ -84,9 +82,9 @@ export class SearchPlacesFunction implements McpFunction {
             url.searchParams.append("key", apiKey);
             if (location) {
                 url.searchParams.append("location", `${location.latitude},${location.longitude}`);
-              }
+            }
             if (radius) {
-            url.searchParams.append("radius", radius.toString());
+                url.searchParams.append("radius", radius.toString());
             }
             const response = await fetch(url);
             const data = await response.json() as PlacesSearchResponse;
@@ -109,7 +107,7 @@ export class SearchPlacesFunction implements McpFunction {
                 } else {
                     place.distance = 0;
                 }
-                if (radius && place.distance < radius/1000) {
+                if (radius && place.distance < radius / 1000) {
                     places.push(place);
                 } else {
                     places.push(place);
@@ -118,9 +116,9 @@ export class SearchPlacesFunction implements McpFunction {
             places.sort((a: any, b: any) => {
                 return a.distance - b.distance;
             });
-            return ResponseFormatter.formatSuccess({ places: places });          
+            return ResponseFormatter.formatSuccess({ places: places });
         } catch (error) {
             return ResponseFormatter.formatError(error);
         }
     }
-  }
+}
